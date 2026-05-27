@@ -1,5 +1,9 @@
 # 🎯 Reactivities
 
+[![Live Demo](https://img.shields.io/badge/🚀%20Live%20Demo-Visit%20App-4f46e5?style=for-the-badge)](https://reactivities-production.up.railway.app)
+
+![Reactivities Home Page](docs/Production_application_pic.png)
+
 > **A full-stack social activity planning app** — where people create events, join in, chat live, and connect with each other.
 
 Built end-to-end with **.NET 10** on the backend and **React 19** on the frontend, Reactivities is a feature-complete reference application covering real-world concerns: clean architecture, CQRS, real-time communication, social features, OAuth, photo storage, and cloud deployment.
@@ -17,7 +21,7 @@ Reactivities lets users:
 - **Upload photos** — drag-and-drop with a crop tool; photos are stored on Cloudinary
 - **Manage their profile** — bio, display name, main photo, and activity history
 
-The **key theme** of this project is demonstrating how all the individual pieces of a modern web stack fit together into a coherent, production-grade application — not just a tutorial toy, but something with auth, real-time events, external services, CI/CD, and cloud hosting.
+The **key theme** of this project is demonstrating how all the individual pieces of a modern web stack fit together into a coherent, production-grade application — with auth, real-time events, external services, CI/CD, and cloud hosting all working as one.
 
 ---
 
@@ -25,32 +29,32 @@ The **key theme** of this project is demonstrating how all the individual pieces
 
 ### Backend — .NET 10
 
-| Layer | Technology |
-|---|---|
-| **API** | ASP.NET Core 10, minimal hosting model |
-| **Architecture** | Clean Architecture — API → Application → Domain ← Persistence / Infrastructure |
-| **CQRS** | MediatR 14 with a pipeline `ValidationBehavior` |
-| **Mapping** | AutoMapper 16 |
-| **Validation** | FluentValidation 12 |
-| **Database** | Entity Framework Core + SQL Server 2022 |
-| **Auth** | ASP.NET Core Identity, cookie-based sessions, GitHub OAuth |
-| **Email** | Resend (transactional — email confirmation, password reset) |
-| **Photo storage** | Cloudinary |
-| **Real-time** | SignalR (`CommentHub`) |
+| Layer             | Technology                                                                     |
+| ----------------- | ------------------------------------------------------------------------------ |
+| **API**           | ASP.NET Core 10, minimal hosting model                                         |
+| **Architecture**  | Clean Architecture — API → Application → Domain ← Persistence / Infrastructure |
+| **CQRS**          | MediatR 14 with a pipeline `ValidationBehavior`                                |
+| **Mapping**       | AutoMapper 16                                                                  |
+| **Validation**    | FluentValidation 12                                                            |
+| **Database**      | Entity Framework Core + SQL Server 2022                                        |
+| **Auth**          | ASP.NET Core Identity, cookie-based sessions, GitHub OAuth                     |
+| **Email**         | Resend (transactional — email confirmation, password reset)                    |
+| **Photo storage** | Cloudinary                                                                     |
+| **Real-time**     | SignalR (`CommentHub`)                                                         |
 
 ### Frontend — React 19
 
-| Area | Technology |
-|---|---|
-| **Framework** | React 19 + TypeScript + Vite 7 |
-| **UI** | Material UI (MUI) v7 + Emotion |
-| **State** | MobX 6 + TanStack React Query v5 |
-| **Routing** | React Router v7 |
-| **Forms** | React Hook Form v7 + Zod v4 validation |
-| **Maps** | Leaflet + React Leaflet |
-| **Photos** | React Dropzone + React Cropper |
-| **HTTP** | Axios |
-| **Real-time** | @microsoft/signalr v10 |
+| Area          | Technology                             |
+| ------------- | -------------------------------------- |
+| **Framework** | React 19 + TypeScript + Vite 7         |
+| **UI**        | Material UI (MUI) v7 + Emotion         |
+| **State**     | MobX 6 + TanStack React Query v5       |
+| **Routing**   | React Router v7                        |
+| **Forms**     | React Hook Form v7 + Zod v4 validation |
+| **Maps**      | Leaflet + React Leaflet                |
+| **Photos**    | React Dropzone + React Cropper         |
+| **HTTP**      | Axios                                  |
+| **Real-time** | @microsoft/signalr v10                 |
 
 ---
 
@@ -129,22 +133,22 @@ Reactivities/
 
 ## ✨ Feature Highlights
 
-| Feature | How it works |
-|---|---|
-| **Activity CRUD** | Create/edit/delete with title, description, date, category, city, venue, and geo-coordinates |
-| **Attendance** | Toggle join/cancel; host cannot leave their own activity; cancelled activities shown differently |
-| **Real-time comments** | SignalR `CommentHub` broadcasts new comments to all connected clients instantly |
-| **Photo upload** | Drag-and-drop → crop → upload to Cloudinary; set any photo as your main avatar |
-| **Follow system** | Follow/unfollow users; dedicated followers/following tabs on every profile page |
-| **Infinite scroll** | Cursor-based pagination with `IntersectionObserver` — loads more activities as you scroll |
-| **Activity filters** | "All", "I'm going", "I'm hosting" — filtered on the server |
-| **Maps** | Every activity shows a Leaflet map pinned to the venue coordinates |
-| **Email auth** | Register with email → confirmation email via Resend → log in |
-| **GitHub OAuth** | One-click sign-in with GitHub; merges into the same Identity system |
-| **Password flows** | Forgot password → reset link by email; change password when logged in |
-| **Role-based policy** | `IsActivityHost` authorization policy prevents other users from editing/deleting activities |
-| **Global error handling** | Middleware returns `ProblemDetails`; React shows 404/500 pages gracefully |
-| **CI/CD** | GitHub Actions workflow builds the React app and deploys to **Azure App Service** |
+| Feature                   | How it works                                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------------ |
+| **Activity CRUD**         | Create/edit/delete with title, description, date, category, city, venue, and geo-coordinates     |
+| **Attendance**            | Toggle join/cancel; host cannot leave their own activity; cancelled activities shown differently |
+| **Real-time comments**    | SignalR `CommentHub` broadcasts new comments to all connected clients instantly                  |
+| **Photo upload**          | Drag-and-drop → crop → upload to Cloudinary; set any photo as your main avatar                   |
+| **Follow system**         | Follow/unfollow users; dedicated followers/following tabs on every profile page                  |
+| **Infinite scroll**       | Cursor-based pagination with `IntersectionObserver` — loads more activities as you scroll        |
+| **Activity filters**      | "All", "I'm going", "I'm hosting" — filtered on the server                                       |
+| **Maps**                  | Every activity shows a Leaflet map pinned to the venue coordinates                               |
+| **Email auth**            | Register with email → confirmation email via Resend → log in                                     |
+| **GitHub OAuth**          | One-click sign-in with GitHub; merges into the same Identity system                              |
+| **Password flows**        | Forgot password → reset link by email; change password when logged in                            |
+| **Role-based policy**     | `IsActivityHost` authorization policy prevents other users from editing/deleting activities      |
+| **Global error handling** | Middleware returns `ProblemDetails`; React shows 404/500 pages gracefully                        |
+| **CI/CD**                 | GitHub Actions workflow builds the React app and deploys to **Azure App Service**                |
 
 ---
 
@@ -152,19 +156,19 @@ Reactivities/
 
 ### Prerequisites
 
-| Tool | Version |
-|---|---|
-| .NET SDK | 10.x |
-| Node.js | 18+ or 20+ |
+| Tool           | Version            |
+| -------------- | ------------------ |
+| .NET SDK       | 10.x               |
+| Node.js        | 18+ or 20+         |
 | Docker Desktop | any recent version |
-| Git | any |
+| Git            | any                |
 
 ---
 
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/TryCatchLearn/Reactivities.git
+git clone https://github.com/deysudhajit123/Reactivities.git
 cd Reactivities
 ```
 
@@ -221,6 +225,7 @@ dotnet run
 ```
 
 The API starts at `https://localhost:5001`. On first boot it:
+
 - Applies all EF Core migrations automatically
 - Seeds three test users with sample activities
 
@@ -237,10 +242,10 @@ The SPA starts at **`https://localhost:3000`** (HTTPS via `vite-plugin-mkcert`).
 
 ### 6. Log in with seeded test accounts
 
-| Email | Password |
-|---|---|
-| `bob@test.com` | `Pa$$w0rd` |
-| `tom@test.com` | `Pa$$w0rd` |
+| Email           | Password   |
+| --------------- | ---------- |
+| `bob@test.com`  | `Pa$$w0rd` |
+| `tom@test.com`  | `Pa$$w0rd` |
 | `jane@test.com` | `Pa$$w0rd` |
 
 ---
@@ -278,57 +283,57 @@ The workflow is triggered manually (`workflow_dispatch`) — push to Azure whene
 
 ## 📡 API Reference
 
-| Method | Route | Auth | Description |
-|---|---|---|---|
-| `GET` | `/api/activities` | ✅ | Paginated, filterable activity list |
-| `GET` | `/api/activities/{id}` | ✅ | Single activity with attendees & comments |
-| `POST` | `/api/activities` | ✅ | Create a new activity |
-| `PUT` | `/api/activities/{id}` | Host only | Edit activity |
-| `DELETE` | `/api/activities/{id}` | Host only | Delete activity |
-| `POST` | `/api/activities/{id}/attend` | ✅ | Toggle attendance |
-| `GET` | `/api/profiles/{userId}` | ✅ | Get user profile |
-| `PUT` | `/api/profiles` | ✅ | Edit own profile |
-| `POST` | `/api/profiles/add-photo` | ✅ | Upload photo to Cloudinary |
-| `PUT` | `/api/profiles/{photoId}/setMain` | ✅ | Set main photo |
-| `DELETE` | `/api/profiles/{photoId}/photos` | ✅ | Delete photo |
-| `POST` | `/api/profiles/{userId}/follow` | ✅ | Toggle follow |
-| `GET` | `/api/profiles/{userId}/follow-list` | ✅ | Followers / following list |
-| `GET` | `/api/profiles/{userId}/activities` | ✅ | User activity history |
-| `POST` | `/api/account/register` | ❌ | Register with email |
-| `POST` | `/api/account/github-login` | ❌ | GitHub OAuth sign-in |
-| `GET` | `/api/account/user-info` | ✅ | Current user info |
-| `POST` | `/api/account/logout` | ✅ | Sign out |
-| `POST` | `/api/account/change-password` | ✅ | Change password |
-| `WS` | `/comments` | ✅ | SignalR hub — real-time comments |
+| Method   | Route                                | Auth      | Description                               |
+| -------- | ------------------------------------ | --------- | ----------------------------------------- |
+| `GET`    | `/api/activities`                    | ✅        | Paginated, filterable activity list       |
+| `GET`    | `/api/activities/{id}`               | ✅        | Single activity with attendees & comments |
+| `POST`   | `/api/activities`                    | ✅        | Create a new activity                     |
+| `PUT`    | `/api/activities/{id}`               | Host only | Edit activity                             |
+| `DELETE` | `/api/activities/{id}`               | Host only | Delete activity                           |
+| `POST`   | `/api/activities/{id}/attend`        | ✅        | Toggle attendance                         |
+| `GET`    | `/api/profiles/{userId}`             | ✅        | Get user profile                          |
+| `PUT`    | `/api/profiles`                      | ✅        | Edit own profile                          |
+| `POST`   | `/api/profiles/add-photo`            | ✅        | Upload photo to Cloudinary                |
+| `PUT`    | `/api/profiles/{photoId}/setMain`    | ✅        | Set main photo                            |
+| `DELETE` | `/api/profiles/{photoId}/photos`     | ✅        | Delete photo                              |
+| `POST`   | `/api/profiles/{userId}/follow`      | ✅        | Toggle follow                             |
+| `GET`    | `/api/profiles/{userId}/follow-list` | ✅        | Followers / following list                |
+| `GET`    | `/api/profiles/{userId}/activities`  | ✅        | User activity history                     |
+| `POST`   | `/api/account/register`              | ❌        | Register with email                       |
+| `POST`   | `/api/account/github-login`          | ❌        | GitHub OAuth sign-in                      |
+| `GET`    | `/api/account/user-info`             | ✅        | Current user info                         |
+| `POST`   | `/api/account/logout`                | ✅        | Sign out                                  |
+| `POST`   | `/api/account/change-password`       | ✅        | Change password                           |
+| `WS`     | `/comments`                          | ✅        | SignalR hub — real-time comments          |
 
 ---
 
 ## 🔑 Configuration Reference
 
-| Key | Description |
-|---|---|
-| `ConnectionStrings:DefaultConnection` | SQL Server connection string |
-| `ClientAppUrl` | Frontend origin for CORS (e.g. `https://localhost:3000`) |
-| `CloudinarySettings:CloudName/ApiKey/ApiSecret` | Cloudinary media storage credentials |
-| `Resend:ApiToken` | Resend API token for transactional email |
-| `Authentication:GitHub:ClientId/ClientSecret` | GitHub OAuth App credentials |
-| `Licences:MediatR` | MediatR v14 commercial licence key |
+| Key                                             | Description                                              |
+| ----------------------------------------------- | -------------------------------------------------------- |
+| `ConnectionStrings:DefaultConnection`           | SQL Server connection string                             |
+| `ClientAppUrl`                                  | Frontend origin for CORS (e.g. `https://localhost:3000`) |
+| `CloudinarySettings:CloudName/ApiKey/ApiSecret` | Cloudinary media storage credentials                     |
+| `Resend:ApiToken`                               | Resend API token for transactional email                 |
+| `Authentication:GitHub:ClientId/ClientSecret`   | GitHub OAuth App credentials                             |
+| `Licences:MediatR`                              | MediatR v14 commercial licence key                       |
 
 ---
 
-## 📚 Learning Context
+## 📚 Design Patterns Demonstrated
 
-This project was built as part of the **Udemy course "Build a Complete App with React and .NET"** by Neil Cummings. It is a hands-on, full-stack reference that demonstrates:
+This project is a hands-on, full-stack reference that demonstrates how enterprise patterns come together in a real application:
 
-- Clean Architecture separation of concerns
-- CQRS with the MediatR pipeline (commands, queries, validation behaviors)
-- EF Core with SQL Server — migrations, seeding, relationships
-- ASP.NET Core Identity with cookie auth and social login (GitHub OAuth)
-- Real-time features via SignalR
-- React state management patterns with MobX and React Query side-by-side
-- Form handling with React Hook Form and Zod schema validation
-- Cloud-native deployment to Azure via GitHub Actions CI/CD
+- **Clean Architecture** — strict dependency inversion across API, Application, Domain, Persistence, and Infrastructure layers
+- **CQRS** — every operation is a discrete MediatR command or query, with a shared validation pipeline behavior
+- **EF Core** — code-first migrations, seed data, complex relationships (many-to-many, self-referencing)
+- **ASP.NET Core Identity** — cookie-based auth, email confirmation, password reset, and GitHub OAuth in one unified system
+- **SignalR** — real-time WebSocket communication for live comment threads
+- **React state management** — MobX stores and React Query working side-by-side for different state concerns
+- **Form architecture** — React Hook Form with Zod schema validation for type-safe, declarative forms
+- **Cloud deployment** — containerised with Docker, deployed to Railway via GitHub Actions CI/CD
 
 ---
 
-*Sudhajit Dey · 2026*
+_Sudhajit Dey · 2026_
