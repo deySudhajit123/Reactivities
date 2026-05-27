@@ -1,30 +1,45 @@
-# Reactivities
+# 🎯 Reactivities
 
-A full-stack social activity planning application built with **.NET 10** and **React 19**. Users can create, join, and manage activities, upload photos, follow other users, and chat in real-time — all in a modern, responsive interface.
+> **A full-stack social activity planning app** — where people create events, join in, chat live, and connect with each other.
 
+Built end-to-end with **.NET 10** on the backend and **React 19** on the frontend, Reactivities is a feature-complete reference application covering real-world concerns: clean architecture, CQRS, real-time communication, social features, OAuth, photo storage, and cloud deployment.
 
-To access the app, register with a valid email address (confirmation required) or use **GitHub OAuth** login.
+---
 
-Test accounts available locally (see [Running Locally](#-running-locally)):
-- **Email:** `bob@test.com` / `tom@test.com` / `jane@test.com`
-- **Password:** `Pa$$w0rd`
+## 🌟 What Is This App About?
+
+Reactivities lets users:
+
+- **Post activities** — give it a title, date, location (with map pin), category, and description
+- **Attend activities** — join any event or cancel your spot
+- **Chat in real time** — every activity has a live comment thread powered by WebSockets
+- **Follow people** — build a social graph; see who's hosting and who's going
+- **Upload photos** — drag-and-drop with a crop tool; photos are stored on Cloudinary
+- **Manage their profile** — bio, display name, main photo, and activity history
+
+The **key theme** of this project is demonstrating how all the individual pieces of a modern web stack fit together into a coherent, production-grade application — not just a tutorial toy, but something with auth, real-time events, external services, CI/CD, and cloud hosting.
 
 ---
 
 ## 🧰 Tech Stack
 
 ### Backend — .NET 10
+
 | Layer | Technology |
 |---|---|
 | **API** | ASP.NET Core 10, minimal hosting model |
-| **Application** | MediatR 14 (CQRS), AutoMapper 16, FluentValidation 12 |
-| **Domain** | Plain C# entities — Activity, User, Comment, Photo, UserFollowing |
-| **Persistence** | Entity Framework Core, SQL Server (docker or local) |
-| **Infrastructure** | Cloudinary (photo storage), Resend (transactional email) |
-| **Auth** | ASP.NET Core Identity, Cookie-based auth, GitHub OAuth |
+| **Architecture** | Clean Architecture — API → Application → Domain ← Persistence / Infrastructure |
+| **CQRS** | MediatR 14 with a pipeline `ValidationBehavior` |
+| **Mapping** | AutoMapper 16 |
+| **Validation** | FluentValidation 12 |
+| **Database** | Entity Framework Core + SQL Server 2022 |
+| **Auth** | ASP.NET Core Identity, cookie-based sessions, GitHub OAuth |
+| **Email** | Resend (transactional — email confirmation, password reset) |
+| **Photo storage** | Cloudinary |
 | **Real-time** | SignalR (`CommentHub`) |
 
 ### Frontend — React 19
+
 | Area | Technology |
 |---|---|
 | **Framework** | React 19 + TypeScript + Vite 7 |
@@ -41,63 +56,95 @@ Test accounts available locally (see [Running Locally](#-running-locally)):
 
 ## 🏗️ Architecture
 
-The backend follows **Clean Architecture** with a strict dependency flow:
+The backend follows **Clean Architecture** with a strict, inward-only dependency flow:
 
 ```
-API  →  Application  →  Domain
-         ↓                 ↑
-    Infrastructure  →  Persistence
+┌────────────────────────────────────────────────────┐
+│                      API Layer                     │
+│  Controllers · Middleware · SignalR · Program.cs   │
+└───────────────────┬────────────────────────────────┘
+                    │ depends on
+┌───────────────────▼────────────────────────────────┐
+│               Application Layer                    │
+│  CQRS Handlers · DTOs · Validators · Interfaces   │
+└───────────┬───────────────────────────┬────────────┘
+            │ depends on                │ depends on
+┌───────────▼──────────┐   ┌───────────▼────────────┐
+│    Domain Layer      │   │  Persistence Layer     │
+│  Activity · User     │   │  EF Core · DbContext   │
+│  Comment · Photo     │   │  Migrations · Seeder   │
+│  UserFollowing       │   └────────────────────────┘
+└──────────────────────┘
+                            ┌────────────────────────┐
+                            │  Infrastructure Layer  │
+                            │  Cloudinary · Resend   │
+                            │  UserAccessor · Auth   │
+                            └────────────────────────┘
 ```
+
+### Project Layout
 
 ```
 Reactivities/
-├── API/                  # ASP.NET Core Web API (controllers, middleware, SignalR)
-│   ├── Controllers/      # ActivitiesController, ProfilesController, AccountController
-│   ├── SignalR/          # CommentHub (real-time comments)
-│   ├── Middleware/       # Global exception handling
-│   └── Program.cs        # App bootstrap, DI registration
-├── Application/          # Business logic — CQRS handlers, DTOs, validators
-│   ├── Activities/       # Queries, Commands, DTOs, Validators for activities
-│   ├── Profiles/         # Queries, Commands, DTOs for user profiles
-│   ├── Core/             # Shared: Result<T>, PagedList, MappingProfiles, ValidationBehavior
-│   └── Interfaces/       # IUserAccessor, IPhotoService
-├── Domain/               # Core entities (no dependencies)
-│   ├── Activity.cs
-│   ├── User.cs           # Extends IdentityUser
+├── API/                    # ASP.NET Core host
+│   ├── Controllers/        # ActivitiesController, ProfilesController, AccountController
+│   ├── SignalR/            # CommentHub — live comments over WebSocket
+│   ├── Middleware/         # Global exception handling with ProblemDetails
+│   └── Program.cs          # DI wiring, middleware pipeline, DB migration on startup
+│
+├── Application/            # Pure business logic — no HTTP, no DB drivers
+│   ├── Activities/         # Queries, Commands, DTOs, Validators (CQRS via MediatR)
+│   ├── Profiles/           # Follow, photo, profile queries & commands
+│   ├── Core/               # Result<T>, PagedList, MappingProfiles, ValidationBehavior
+│   └── Interfaces/         # IUserAccessor, IPhotoService (implemented in Infrastructure)
+│
+├── Domain/                 # Plain C# entities — zero dependencies
+│   ├── Activity.cs         # Title, Date, Category, City, Venue, Lat/Lon, Attendees, Comments
+│   ├── User.cs             # Extends IdentityUser; has Bio, DisplayName, Photos, Followings
 │   ├── Comment.cs
 │   ├── Photo.cs
-│   ├── ActivityAttendee.cs
-│   └── UserFollowing.cs
-├── Persistence/          # EF Core DbContext, migrations, seed data
+│   ├── ActivityAttendee.cs # Join table — User ↔ Activity (isHost flag)
+│   └── UserFollowing.cs    # Self-referencing follow relationship
+│
+├── Persistence/            # EF Core
 │   ├── AppDbContext.cs
-│   └── DbInitializer.cs
-├── Infrastructure/       # External service implementations
-│   ├── Photos/           # Cloudinary photo upload/delete
-│   ├── Email/            # Resend transactional email
-│   └── Security/         # IsHostRequirement, UserAccessor
-├── client/               # React 19 + Vite frontend
+│   └── DbInitializer.cs    # Seeds bob / tom / jane with sample activities
+│
+├── Infrastructure/         # External-service adapters
+│   ├── Photos/             # Cloudinary upload & delete
+│   ├── Email/              # Resend transactional email (confirm, reset)
+│   └── Security/           # IsHostRequirement policy, UserAccessor (reads ClaimsPrincipal)
+│
+├── client/                 # React 19 + Vite SPA
 │   └── src/
-│       ├── app/          # Layout, router, shared components
-│       └── features/     # activities, account, profiles, errors, home
-├── Dockerfile
-└── docker-compose.yml    # SQL Server 2022 container
+│       ├── app/            # Layout, router, shared components (maps, photo upload, inputs)
+│       └── features/       # activities · account · profiles · errors · home
+│
+├── Dockerfile              # Multi-stage: sdk:10.0 build → aspnet:10.0 runtime (port 8080)
+├── docker-compose.yml      # SQL Server 2022 container for local dev
+└── .github/workflows/      # Azure Web App CI/CD (manual trigger)
 ```
 
 ---
 
-## ✨ Features
+## ✨ Feature Highlights
 
-- **Activity Management** — Create, edit, delete, and browse activities with title, description, date, category, city, venue, and geolocation.
-- **Attendance** — Join or cancel attendance on any activity; host cannot leave their own activity.
-- **User Profiles** — View/edit bio, display name, and profile photo. See activities hosted/attended.
-- **Photo Upload** — Drag-and-drop upload with crop tool; stored on Cloudinary. Set a main photo.
-- **Follow System** — Follow/unfollow users; view followers and following lists.
-- **Real-time Comments** — Live chat on each activity via SignalR websockets.
-- **Infinite Scroll** — Activity list uses cursor-based pagination with intersection observer.
-- **Authentication** — Cookie-based sessions via ASP.NET Core Identity. Supports email/password registration (with email confirmation via Resend) and **GitHub OAuth**.
-- **Role-based Authorization** — Only the activity host can edit or delete an activity (`IsActivityHost` policy).
-- **Maps** — Each activity displays its location on a Leaflet map.
-- **Filtering** — Filter activities by "All", "I'm going", or "I'm hosting".
+| Feature | How it works |
+|---|---|
+| **Activity CRUD** | Create/edit/delete with title, description, date, category, city, venue, and geo-coordinates |
+| **Attendance** | Toggle join/cancel; host cannot leave their own activity; cancelled activities shown differently |
+| **Real-time comments** | SignalR `CommentHub` broadcasts new comments to all connected clients instantly |
+| **Photo upload** | Drag-and-drop → crop → upload to Cloudinary; set any photo as your main avatar |
+| **Follow system** | Follow/unfollow users; dedicated followers/following tabs on every profile page |
+| **Infinite scroll** | Cursor-based pagination with `IntersectionObserver` — loads more activities as you scroll |
+| **Activity filters** | "All", "I'm going", "I'm hosting" — filtered on the server |
+| **Maps** | Every activity shows a Leaflet map pinned to the venue coordinates |
+| **Email auth** | Register with email → confirmation email via Resend → log in |
+| **GitHub OAuth** | One-click sign-in with GitHub; merges into the same Identity system |
+| **Password flows** | Forgot password → reset link by email; change password when logged in |
+| **Role-based policy** | `IsActivityHost` authorization policy prevents other users from editing/deleting activities |
+| **Global error handling** | Middleware returns `ProblemDetails`; React shows 404/500 pages gracefully |
+| **CI/CD** | GitHub Actions workflow builds the React app and deploys to **Azure App Service** |
 
 ---
 
@@ -112,35 +159,29 @@ Reactivities/
 | Docker Desktop | any recent version |
 | Git | any |
 
-### 1. Clone the repository
+---
+
+### 1. Clone the repo
 
 ```bash
 git clone https://github.com/TryCatchLearn/Reactivities.git
 cd Reactivities
 ```
 
-### 2. Start the SQL Server container
+### 2. Start SQL Server (Docker)
 
 ```bash
 docker-compose up -d
 ```
 
-This starts a **SQL Server 2022** container on port `1433` with:
-- SA Password: `Password@1`
-- Persistent volume: `sql-data`
+Starts **SQL Server 2022** on `localhost:1433` with SA password `Password@1` and a persistent `sql-data` volume.
 
-### 3. Configure app secrets
+### 3. Configure secrets
 
-Create `API/appsettings.json` (this file is git-ignored):
+Create `API/appsettings.json` (git-ignored):
 
 ```json
 {
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
   "ConnectionStrings": {
     "DefaultConnection": "Server=localhost,1433;Database=reactivities;User Id=SA;Password=Password@1;TrustServerCertificate=True"
   },
@@ -159,40 +200,40 @@ Create `API/appsettings.json` (this file is git-ignored):
       "ClientSecret": "REPLACEME"
     }
   },
+  "Licences": {
+    "MediatR": "REPLACEME"
+  },
   "AllowedHosts": "*"
 }
 ```
 
-> **Photo uploads** require a free [Cloudinary](https://cloudinary.com) account.  
-> **Email confirmation** requires a free [Resend](https://resend.com) account.  
-> **GitHub login** requires a GitHub OAuth App — create one at [github.com/settings/developers](https://github.com/settings/developers).
+> **Photo uploads** → free [Cloudinary](https://cloudinary.com) account  
+> **Email confirmation / password reset** → free [Resend](https://resend.com) account  
+> **GitHub login** → OAuth App at [github.com/settings/developers](https://github.com/settings/developers)  
+> **MediatR** → commercial licence required for v14+ (free tier available)
 
-### 4. Restore backend dependencies and run the API
+### 4. Run the API
 
 ```bash
-# From the solution root
 dotnet restore
-
-# Run the API (auto-migrates DB and seeds test data on first start)
 cd API
 dotnet run
 ```
 
-The API will be available at `https://localhost:5001` (or `http://localhost:5000`).  
-On startup it automatically:
-- Applies all EF Core migrations
-- Seeds three test users (`bob`, `tom`, `jane`) with sample activities
+The API starts at `https://localhost:5001`. On first boot it:
+- Applies all EF Core migrations automatically
+- Seeds three test users with sample activities
 
-### 5. Install frontend dependencies and run the dev server
+### 5. Run the React dev server
 
 ```bash
-# From the solution root, open a second terminal
+# new terminal from the solution root
 cd client
 npm install
 npm run dev
 ```
 
-The React app starts at **`https://localhost:3000`** (HTTPS via `vite-plugin-mkcert`).
+The SPA starts at **`https://localhost:3000`** (HTTPS via `vite-plugin-mkcert`).
 
 ### 6. Log in with seeded test accounts
 
@@ -206,60 +247,88 @@ The React app starts at **`https://localhost:3000`** (HTTPS via `vite-plugin-mkc
 
 ## 🐳 Docker (Production Build)
 
-The `Dockerfile` uses a **multi-stage build**:
-
-1. **Build stage** — uses `mcr.microsoft.com/dotnet/sdk:10.0` to restore and publish the API.
-2. **Runtime stage** — uses `mcr.microsoft.com/dotnet/aspnet:10.0`; serves on port `8080`.
-
-The Vite client must be built separately and output to `API/wwwroot` before building the Docker image:
+The `Dockerfile` uses a **multi-stage build** — compile with the full SDK, run on the lightweight runtime image.
 
 ```bash
-cd client
-npm run build      # outputs to ../API/wwwroot
+# 1. Build the React app first (outputs to API/wwwroot)
+cd client && npm install && npm run build && cd ..
 
-cd ..
+# 2. Build and run the Docker image
 docker build -t reactivities .
-docker run -p 8080:8080 reactivities
+docker run -p 8080:8080 \
+  -e "ConnectionStrings__DefaultConnection=<your-connection-string>" \
+  reactivities
 ```
+
+The container listens on port `8080` and serves both the API and the pre-built React SPA as static files.
 
 ---
 
-## 🔑 Key Configuration Reference
+## ☁️ Cloud Deployment
+
+The project includes a **GitHub Actions workflow** ([`.github/workflows/main_reactivities-2026.yml`](.github/workflows/main_reactivities-2026.yml)) that:
+
+1. Builds the React client with Node 22
+2. Restores, builds, and publishes the .NET 10 API
+3. Deploys to **Azure App Service** (`reactivities-2026`) using OIDC federated credentials
+
+The workflow is triggered manually (`workflow_dispatch`) — push to Azure whenever you're ready.
+
+---
+
+## 📡 API Reference
+
+| Method | Route | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/activities` | ✅ | Paginated, filterable activity list |
+| `GET` | `/api/activities/{id}` | ✅ | Single activity with attendees & comments |
+| `POST` | `/api/activities` | ✅ | Create a new activity |
+| `PUT` | `/api/activities/{id}` | Host only | Edit activity |
+| `DELETE` | `/api/activities/{id}` | Host only | Delete activity |
+| `POST` | `/api/activities/{id}/attend` | ✅ | Toggle attendance |
+| `GET` | `/api/profiles/{userId}` | ✅ | Get user profile |
+| `PUT` | `/api/profiles` | ✅ | Edit own profile |
+| `POST` | `/api/profiles/add-photo` | ✅ | Upload photo to Cloudinary |
+| `PUT` | `/api/profiles/{photoId}/setMain` | ✅ | Set main photo |
+| `DELETE` | `/api/profiles/{photoId}/photos` | ✅ | Delete photo |
+| `POST` | `/api/profiles/{userId}/follow` | ✅ | Toggle follow |
+| `GET` | `/api/profiles/{userId}/follow-list` | ✅ | Followers / following list |
+| `GET` | `/api/profiles/{userId}/activities` | ✅ | User activity history |
+| `POST` | `/api/account/register` | ❌ | Register with email |
+| `POST` | `/api/account/github-login` | ❌ | GitHub OAuth sign-in |
+| `GET` | `/api/account/user-info` | ✅ | Current user info |
+| `POST` | `/api/account/logout` | ✅ | Sign out |
+| `POST` | `/api/account/change-password` | ✅ | Change password |
+| `WS` | `/comments` | ✅ | SignalR hub — real-time comments |
+
+---
+
+## 🔑 Configuration Reference
 
 | Key | Description |
 |---|---|
 | `ConnectionStrings:DefaultConnection` | SQL Server connection string |
-| `ClientAppUrl` | Frontend origin (e.g. `https://localhost:3000`) |
-| `CloudinarySettings:CloudName/ApiKey/ApiSecret` | Cloudinary credentials |
+| `ClientAppUrl` | Frontend origin for CORS (e.g. `https://localhost:3000`) |
+| `CloudinarySettings:CloudName/ApiKey/ApiSecret` | Cloudinary media storage credentials |
 | `Resend:ApiToken` | Resend API token for transactional email |
 | `Authentication:GitHub:ClientId/ClientSecret` | GitHub OAuth App credentials |
-| `Licences:MediatR` | MediatR commercial licence key (required in v14+) |
+| `Licences:MediatR` | MediatR v14 commercial licence key |
 
 ---
 
-## 📡 API Endpoints (Summary)
+## 📚 Learning Context
 
-| Method | Route | Description |
-|---|---|---|
-| `GET` | `/api/activities` | Paginated activity list (cursor-based) |
-| `GET` | `/api/activities/{id}` | Single activity detail |
-| `POST` | `/api/activities` | Create activity |
-| `PUT` | `/api/activities/{id}` | Edit activity (host only) |
-| `DELETE` | `/api/activities/{id}` | Delete activity (host only) |
-| `POST` | `/api/activities/{id}/attend` | Toggle attendance |
-| `GET` | `/api/profiles/{userId}` | Get user profile |
-| `PUT` | `/api/profiles` | Update profile |
-| `POST` | `/api/profiles/add-photo` | Upload photo to Cloudinary |
-| `DELETE` | `/api/profiles/{photoId}/photos` | Delete photo |
-| `PUT` | `/api/profiles/{photoId}/setMain` | Set main photo |
-| `POST` | `/api/profiles/{userId}/follow` | Toggle follow |
-| `GET` | `/api/profiles/{userId}/follow-list` | Followers/following list |
-| `GET` | `/api/profiles/{userId}/activities` | User activity history |
-| `POST` | `/api/account/register` | Register with email |
-| `POST` | `/api/account/github-login` | GitHub OAuth login |
-| `GET` | `/api/account/user-info` | Get current user info |
-| `POST` | `/api/account/logout` | Sign out |
-| `POST` | `/api/account/change-password` | Change password |
-| `WS` | `/comments` | SignalR hub for real-time comments |
+This project was built as part of the **Udemy course "Build a Complete App with React and .NET"** by Neil Cummings. It is a hands-on, full-stack reference that demonstrates:
 
+- Clean Architecture separation of concerns
+- CQRS with the MediatR pipeline (commands, queries, validation behaviors)
+- EF Core with SQL Server — migrations, seeding, relationships
+- ASP.NET Core Identity with cookie auth and social login (GitHub OAuth)
+- Real-time features via SignalR
+- React state management patterns with MobX and React Query side-by-side
+- Form handling with React Hook Form and Zod schema validation
+- Cloud-native deployment to Azure via GitHub Actions CI/CD
 
+---
+
+*Sudhajit Dey · 2026*

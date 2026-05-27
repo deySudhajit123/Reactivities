@@ -26,7 +26,11 @@ builder.Services.AddControllers(opt =>
 });
 builder.Services.AddDbContext<AppDbContext>(opt =>
 {
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (builder.Environment.IsDevelopment())
+        opt.UseSqlServer(connectionString);
+    else
+        opt.UseNpgsql(connectionString);
 });
 builder.Services.AddCors();
 builder.Services.AddSignalR();
